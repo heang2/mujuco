@@ -1,0 +1,25 @@
+# CartPole — relatively easy environment, converges quickly
+env_name:         CartPole
+total_timesteps:  200_000
+seed:             42
+eval_episodes:    20
+eval_interval:    20_000
+save_interval:    50_000
+log_dir:          logs
+
+ppo:
+  actor_hidden:     [128, 128]
+  critic_hidden:    [128, 128]
+  n_steps:          1024
+  n_epochs:         10
+  mini_batch_size:  64
+  clip_eps:         0.2
+  vf_coef:          0.5
+  ent_coef:         0.01       # small entropy bonus encourages early exploration
+  max_grad_norm:    0.5
+  gamma:            0.99
+  gae_lambda:       0.95
+  lr:               3.0e-4
+  lr_anneal:        true
+  normalize_obs:    true
+  normalize_rewards: false

@@ -1,0 +1,77 @@
+<mujoco model="hopper">
+  <compiler angle="radian" autolimits="true"/>
+  <option timestep="0.004" gravity="0 0 -9.81" integrator="RK4"/>
+
+  <visual>
+    <headlight ambient="0.3 0.3 0.3" diffuse="0.8 0.8 0.8"/>
+    <rgba haze="0.15 0.2 0.25 1"/>
+    <quality shadowsize="2048"/>
+  </visual>
+
+  <default>
+    <joint limited="true" damping="0.1" armature="0.01"/>
+    <geom condim="3" friction="0.7 0.1 0.1" solimp="0.9 0.95 0.001" solref="0.02 1"/>
+    <motor ctrllimited="true" ctrlrange="-1 1" gear="150"/>
+  </default>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.4 0.6 0.8" rgb2="0 0 0" width="512" height="3072"/>
+    <texture name="ground_tex" type="2d" builtin="checker" rgb1="0.25 0.35 0.25" rgb2="0.15 0.2 0.15"
+             width="256" height="256"/>
+    <material name="ground_mat" texture="ground_tex" texrepeat="8 8"/>
+    <material name="torso_mat"  rgba="0.3 0.6 0.9 1"/>
+    <material name="thigh_mat"  rgba="0.2 0.5 0.8 1"/>
+    <material name="leg_mat"    rgba="0.1 0.4 0.7 1"/>
+    <material name="foot_mat"   rgba="0.8 0.5 0.2 1"/>
+  </asset>
+
+  <worldbody>
+    <light name="top"   pos="0 0 6"  dir="0 0 -1"    diffuse="0.6 0.6 0.6" specular="0.2 0.2 0.2" castshadow="true"/>
+    <light name="side"  pos="3 0 4"  dir="-1 0 -0.5" diffuse="0.4 0.4 0.4"/>
+    <geom name="floor"  type="plane" size="50 10 0.1" material="ground_mat" pos="0 0 0"/>
+
+    <!-- Torso (root, free to move in x-z plane) -->
+    <body name="torso" pos="0 0 1.25">
+      <joint name="rootx"   type="slide" axis="1 0 0" limited="false" damping="0" armature="0"/>
+      <joint name="rootz"   type="slide" axis="0 0 1" limited="false" damping="0" armature="0"/>
+      <joint name="rooty"   type="hinge" axis="0 1 0" limited="false" damping="0" armature="0"/>
+
+      <geom name="torso_geom" type="capsule" fromto="0 0 0.1  0 0 0.4" size="0.065" material="torso_mat" mass="3.6"/>
+      <geom name="head_geom"  type="sphere"  pos="0 0 0.45"    size="0.06"  rgba="0.9 0.7 0.3 1"  mass="0.5"/>
+
+      <!-- Thigh -->
+      <body name="thigh" pos="0 0 0.1">
+        <joint name="thigh_joint" type="hinge" axis="0 1 0" range="-0.523 1.396" damping="2.0"/>
+        <geom name="thigh_geom" type="capsule" fromto="0 0 0  0 0 -0.45" size="0.05" material="thigh_mat" mass="1.0"/>
+
+        <!-- Leg -->
+        <body name="leg" pos="0 0 -0.45">
+          <joint name="leg_joint" type="hinge" axis="0 1 0" range="-1.745 -0.0524" damping="2.0"/>
+          <geom name="leg_geom" type="capsule" fromto="0 0 0  0 0 -0.4" size="0.04" material="leg_mat" mass="0.7"/>
+
+          <!-- Foot -->
+          <body name="foot" pos="0 0 -0.4">
+            <joint name="foot_joint" type="hinge" axis="0 1 0" range="-0.785 0.785" damping="2.0"/>
+            <geom name="foot_geom" type="capsule" fromto="-0.06 0 0  0.22 0 0" size="0.04"
+                  material="foot_mat" mass="0.4" friction="2.0 0.1 0.1"/>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="thigh_act" joint="thigh_joint" gear="150"/>
+    <motor name="leg_act"   joint="leg_joint"   gear="150"/>
+    <motor name="foot_act"  joint="foot_joint"  gear="150"/>
+  </actuator>
+
+  <sensor>
+    <jointpos name="thigh_pos"  joint="thigh_joint"/>
+    <jointpos name="leg_pos"    joint="leg_joint"/>
+    <jointpos name="foot_pos"   joint="foot_joint"/>
+    <jointvel name="thigh_vel"  joint="thigh_joint"/>
+    <jointvel name="leg_vel"    joint="leg_joint"/>
+    <jointvel name="foot_vel"   joint="foot_joint"/>
+  </sensor>
+</mujoco>

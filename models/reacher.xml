@@ -1,0 +1,69 @@
+<mujoco model="reacher">
+  <compiler angle="radian" autolimits="true"/>
+  <option timestep="0.02" gravity="0 0 0" integrator="RK4"/>
+
+  <visual>
+    <headlight ambient="0.4 0.4 0.4" diffuse="0.8 0.8 0.8"/>
+    <rgba haze="0.1 0.1 0.15 1"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="flat" rgb1="0.15 0.15 0.2" rgb2="0.05 0.05 0.1" width="512" height="512"/>
+    <material name="arm_upper_mat"  rgba="0.2 0.6 0.9 1"/>
+    <material name="arm_lower_mat"  rgba="0.1 0.4 0.7 1"/>
+    <material name="joint_mat"      rgba="0.8 0.8 0.8 1"/>
+    <material name="target_mat"     rgba="0.9 0.2 0.2 0.7"/>
+    <material name="fingertip_mat"  rgba="0.1 0.9 0.3 1"/>
+    <material name="base_mat"       rgba="0.3 0.3 0.35 1"/>
+  </asset>
+
+  <worldbody>
+    <light name="light1" pos="0  2 3" dir="0 -0.5 -1" diffuse="0.7 0.7 0.7"/>
+    <light name="light2" pos="0 -2 3" dir="0  0.5 -1" diffuse="0.4 0.4 0.4"/>
+
+    <!-- Fixed base plate -->
+    <geom name="base_plate" type="cylinder" pos="0 0 -0.02" size="0.08 0.015" material="base_mat"/>
+
+    <!-- Shoulder joint (z-axis rotation) -->
+    <body name="upper_arm" pos="0 0 0">
+      <joint name="shoulder" type="hinge" axis="0 0 1" range="-3.1416 3.1416" damping="0.5" stiffness="0"/>
+      <geom name="shoulder_geom" type="sphere" size="0.035" material="joint_mat" mass="0.05"/>
+      <geom name="upper_arm_geom" type="capsule" fromto="0 0 0  0.12 0 0" size="0.022" material="arm_upper_mat" mass="0.3"/>
+
+      <!-- Elbow joint -->
+      <body name="lower_arm" pos="0.12 0 0">
+        <joint name="elbow" type="hinge" axis="0 0 1" range="-3.1416 3.1416" damping="0.5" stiffness="0"/>
+        <geom name="elbow_geom" type="sphere" size="0.028" material="joint_mat" mass="0.03"/>
+        <geom name="lower_arm_geom" type="capsule" fromto="0 0 0  0.10 0 0" size="0.018" material="arm_lower_mat" mass="0.2"/>
+
+        <!-- Fingertip (end-effector) -->
+        <body name="fingertip" pos="0.10 0 0">
+          <geom name="fingertip_geom" type="sphere" size="0.020" material="fingertip_mat" mass="0.02"/>
+          <site name="fingertip_site" pos="0 0 0" size="0.005"/>
+        </body>
+      </body>
+    </body>
+
+    <!-- Target (moved by the environment at reset) -->
+    <body name="target" pos="0.15 0.05 0">
+      <joint name="target_x" type="slide" axis="1 0 0" range="-0.22 0.22"/>
+      <joint name="target_y" type="slide" axis="0 1 0" range="-0.22 0.22"/>
+      <geom name="target_geom" type="sphere" size="0.025" material="target_mat" contype="0" conaffinity="0"/>
+      <site name="target_site" pos="0 0 0" size="0.005"/>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="shoulder_motor" joint="shoulder" gear="1.0" ctrllimited="true" ctrlrange="-1 1"/>
+    <motor name="elbow_motor"    joint="elbow"    gear="1.0" ctrllimited="true" ctrlrange="-1 1"/>
+  </actuator>
+
+  <sensor>
+    <jointpos  name="shoulder_pos"  joint="shoulder"/>
+    <jointvel  name="shoulder_vel"  joint="shoulder"/>
+    <jointpos  name="elbow_pos"     joint="elbow"/>
+    <jointvel  name="elbow_vel"     joint="elbow"/>
+    <framepos  name="fingertip_pos" objtype="site" objname="fingertip_site"/>
+    <framepos  name="target_pos"    objtype="site" objname="target_site"/>
+  </sensor>
+</mujoco>

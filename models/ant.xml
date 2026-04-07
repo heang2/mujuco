@@ -1,0 +1,107 @@
+<mujoco model="ant">
+  <compiler angle="radian" autolimits="true"/>
+  <option timestep="0.01" gravity="0 0 -9.81" integrator="RK4"/>
+
+  <visual>
+    <headlight ambient="0.3 0.3 0.3" diffuse="0.7 0.7 0.7"/>
+    <rgba haze="0.2 0.25 0.3 1"/>
+  </visual>
+
+  <default>
+    <joint limited="true" damping="1.0" armature="0.1"/>
+    <geom condim="3" friction="1.0 0.05 0.05" rgba="0.6 0.6 0.6 1"
+          solimp="0.9 0.95 0.001" solref="0.02 1"/>
+    <motor ctrllimited="true" ctrlrange="-1 1" gear="150"/>
+  </default>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.5 0.6 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture name="ground_tex" type="2d" builtin="checker" rgb1="0.2 0.3 0.2" rgb2="0.12 0.18 0.12"
+             width="256" height="256"/>
+    <material name="ground_mat" texture="ground_tex" texrepeat="10 10"/>
+    <material name="torso_mat"  rgba="0.8 0.5 0.1 1"/>
+    <material name="hip_mat"    rgba="0.7 0.4 0.1 1"/>
+    <material name="ankle_mat"  rgba="0.5 0.3 0.1 1"/>
+  </asset>
+
+  <worldbody>
+    <light name="top"   pos="0 0 8"  dir="0 0 -1"  diffuse="0.6 0.6 0.6" castshadow="true"/>
+    <light name="side1" pos="5 5 5"  dir="-1 -1 -1" diffuse="0.3 0.3 0.3"/>
+    <geom name="floor"  type="plane" size="50 50 0.1" material="ground_mat"/>
+
+    <!-- Root body (torso) -->
+    <body name="torso" pos="0 0 0.75">
+      <freejoint name="root"/>
+      <geom name="torso_geom" type="sphere" size="0.25" material="torso_mat" mass="10.0"/>
+
+      <!-- Front-Right Leg -->
+      <body name="front_right_hip" pos="0.2 -0.2 0">
+        <joint name="hip_1" type="hinge" axis="0 0 1" range="-0.523 0.523" damping="1.0"/>
+        <geom name="aux_1" type="capsule" fromto="0 0 0  0.14 0 0" size="0.08" material="hip_mat" mass="0.5"/>
+        <body name="front_right_foot" pos="0.14 0 0">
+          <joint name="ankle_1" type="hinge" axis="-1 1 0" range="0.524 1.745" damping="1.0"/>
+          <geom name="right_front_leg" type="capsule" fromto="0 0 0  0.4 0 0" size="0.08"
+                material="ankle_mat" mass="0.5" friction="1.5 0.05 0.05"/>
+        </body>
+      </body>
+
+      <!-- Front-Left Leg -->
+      <body name="front_left_hip" pos="0.2 0.2 0">
+        <joint name="hip_2" type="hinge" axis="0 0 1" range="-0.523 0.523" damping="1.0"/>
+        <geom name="aux_2" type="capsule" fromto="0 0 0  0.14 0 0" size="0.08" material="hip_mat" mass="0.5"/>
+        <body name="front_left_foot" pos="0.14 0 0">
+          <joint name="ankle_2" type="hinge" axis="1 1 0" range="-1.745 -0.524" damping="1.0"/>
+          <geom name="left_front_leg" type="capsule" fromto="0 0 0  0.4 0 0" size="0.08"
+                material="ankle_mat" mass="0.5" friction="1.5 0.05 0.05"/>
+        </body>
+      </body>
+
+      <!-- Back-Right Leg -->
+      <body name="back_right_hip" pos="-0.2 -0.2 0">
+        <joint name="hip_3" type="hinge" axis="0 0 1" range="-0.523 0.523" damping="1.0"/>
+        <geom name="aux_3" type="capsule" fromto="0 0 0  -0.14 0 0" size="0.08" material="hip_mat" mass="0.5"/>
+        <body name="back_right_foot" pos="-0.14 0 0">
+          <joint name="ankle_3" type="hinge" axis="-1 1 0" range="-1.745 -0.524" damping="1.0"/>
+          <geom name="right_back_leg" type="capsule" fromto="0 0 0  -0.4 0 0" size="0.08"
+                material="ankle_mat" mass="0.5" friction="1.5 0.05 0.05"/>
+        </body>
+      </body>
+
+      <!-- Back-Left Leg -->
+      <body name="back_left_hip" pos="-0.2 0.2 0">
+        <joint name="hip_4" type="hinge" axis="0 0 1" range="-0.523 0.523" damping="1.0"/>
+        <geom name="aux_4" type="capsule" fromto="0 0 0  -0.14 0 0" size="0.08" material="hip_mat" mass="0.5"/>
+        <body name="back_left_foot" pos="-0.14 0 0">
+          <joint name="ankle_4" type="hinge" axis="1 1 0" range="0.524 1.745" damping="1.0"/>
+          <geom name="left_back_leg" type="capsule" fromto="0 0 0  -0.4 0 0" size="0.08"
+                material="ankle_mat" mass="0.5" friction="1.5 0.05 0.05"/>
+        </body>
+      </body>
+
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="hip_1_mot"   joint="hip_1"   gear="150"/>
+    <motor name="ankle_1_mot" joint="ankle_1" gear="150"/>
+    <motor name="hip_2_mot"   joint="hip_2"   gear="150"/>
+    <motor name="ankle_2_mot" joint="ankle_2" gear="150"/>
+    <motor name="hip_3_mot"   joint="hip_3"   gear="150"/>
+    <motor name="ankle_3_mot" joint="ankle_3" gear="150"/>
+    <motor name="hip_4_mot"   joint="hip_4"   gear="150"/>
+    <motor name="ankle_4_mot" joint="ankle_4" gear="150"/>
+  </actuator>
+
+  <sensor>
+    <jointpos name="hip1_pos"   joint="hip_1"/>
+    <jointpos name="ankle1_pos" joint="ankle_1"/>
+    <jointpos name="hip2_pos"   joint="hip_2"/>
+    <jointpos name="ankle2_pos" joint="ankle_2"/>
+    <jointpos name="hip3_pos"   joint="hip_3"/>
+    <jointpos name="ankle3_pos" joint="ankle_3"/>
+    <jointpos name="hip4_pos"   joint="hip_4"/>
+    <jointpos name="ankle4_pos" joint="ankle_4"/>
+    <framepos name="torso_pos"  objtype="body" objname="torso"/>
+    <framequat name="torso_quat" objtype="body" objname="torso"/>
+  </sensor>
+</mujoco>

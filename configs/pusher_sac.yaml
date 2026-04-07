@@ -1,0 +1,28 @@
+# Pusher — 7-DOF arm pushing task, off-policy works better here
+env_name:         Pusher
+algorithm:        sac
+total_timesteps:  1_000_000
+seed:             42
+eval_episodes:    20
+eval_interval:    50_000
+save_interval:    200_000
+log_dir:          logs
+
+sac:
+  hidden_sizes:      [400, 300]     # wider net for high-dim arm control
+  gamma:             0.99
+  tau:               0.005
+  lr_actor:          3.0e-4
+  lr_critic:         3.0e-4
+  lr_alpha:          3.0e-4
+  batch_size:        256
+  replay_capacity:   1_000_000
+  learning_starts:   10_000
+  update_every:      1
+  gradient_steps:    1
+  auto_tune_alpha:   true
+  init_alpha:        0.2
+  use_per:           true           # PER helps with sparse-ish reward
+  per_alpha:         0.6
+  per_beta_init:     0.4
+  per_beta_steps:    1_000_000

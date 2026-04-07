@@ -1,0 +1,25 @@
+# Hopper — SAC is more sample efficient than PPO here
+env_name:         Hopper
+algorithm:        sac
+total_timesteps:  500_000
+seed:             42
+eval_episodes:    10
+eval_interval:    25_000
+save_interval:    100_000
+log_dir:          logs
+
+sac:
+  hidden_sizes:      [256, 256]
+  gamma:             0.99
+  tau:               0.005
+  lr_actor:          3.0e-4
+  lr_critic:         3.0e-4
+  lr_alpha:          3.0e-4
+  batch_size:        256
+  replay_capacity:   1_000_000
+  learning_starts:   5_000
+  update_every:      1
+  gradient_steps:    1
+  auto_tune_alpha:   true
+  init_alpha:        0.2
+  use_per:           false

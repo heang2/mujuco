@@ -1,0 +1,49 @@
+# Claude internal files
+.claude/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# Training outputs
+logs/
+checkpoints/
+*.pt
+*.pth
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Plots & videos (keep structure, ignore content)
+assets/screenshots/*.png
+assets/screenshots/*.jpg
+!assets/screenshots/.gitkeep
+assets/*.mp4
+assets/*.gif
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+.coverage
+htmlcov/
+.pytest_cache/

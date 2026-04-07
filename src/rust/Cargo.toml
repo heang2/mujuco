@@ -1,0 +1,34 @@
+[package]
+name        = "mujoco_replay"
+version     = "0.1.0"
+edition     = "2021"
+description = "High-performance replay buffer for MuJoCo RL — Python bindings via PyO3"
+license     = "MIT"
+readme      = "README.md"
+
+[lib]
+name    = "mujoco_replay"
+crate-type = ["cdylib"]   # produces a .so / .pyd loadable by Python
+
+[dependencies]
+pyo3 = { version = "0.21", features = ["extension-module"] }
+rand = { version = "0.8",  features = ["small_rng"] }
+numpy = "0.21"
+rayon = "1.9"      # data parallelism for batch sampling
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name    = "buffer_bench"
+harness = false
+
+[profile.release]
+opt-level     = 3
+lto           = true
+codegen-units = 1
+panic         = "abort"
+
+[profile.bench]
+inherits = "release"
+debug    = true

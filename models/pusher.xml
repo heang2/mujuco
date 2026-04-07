@@ -1,0 +1,141 @@
+<mujoco model="pusher">
+  <!--
+    Pusher: a 7-DOF robot arm must push a cylindrical puck to a goal position.
+    The robot base is fixed; the puck slides freely on the tabletop (xy plane).
+
+    Joints: shoulder_pan, shoulder_lift, upper_arm_roll,
+            elbow_flex, forearm_roll, wrist_flex, wrist_roll
+    Goal:   push puck within 5 cm of the red goal marker
+  -->
+  <compiler angle="radian" autolimits="true"/>
+  <option timestep="0.01" gravity="0 0 -9.81" integrator="RK4"/>
+
+  <visual>
+    <headlight ambient="0.4 0.4 0.4" diffuse="0.8 0.8 0.8"/>
+    <rgba haze="0.1 0.1 0.15 1"/>
+  </visual>
+
+  <default>
+    <joint damping="1.0" armature="0.04"/>
+    <geom condim="4" friction="1.0 0.1 0.1"/>
+    <motor ctrllimited="true" ctrlrange="-1 1" gear="30"/>
+  </default>
+
+  <asset>
+    <texture type="skybox" builtin="flat" rgb1="0.15 0.15 0.2" rgb2="0.05 0.05 0.1" width="256" height="256"/>
+    <texture name="table_tex" type="2d" builtin="flat" rgb1="0.55 0.45 0.35" rgb2="0.55 0.45 0.35" width="64" height="64"/>
+    <material name="table_mat"  texture="table_tex"/>
+    <material name="arm_mat"    rgba="0.25 0.55 0.85 1"/>
+    <material name="joint_mat"  rgba="0.7 0.7 0.7 1"/>
+    <material name="ee_mat"     rgba="0.1 0.9 0.3 1"/>
+    <material name="puck_mat"   rgba="0.9 0.6 0.1 1"/>
+    <material name="goal_mat"   rgba="0.9 0.2 0.2 0.5"/>
+    <material name="base_mat"   rgba="0.3 0.3 0.35 1"/>
+  </asset>
+
+  <worldbody>
+    <light name="top"   pos="0 0 3" dir="0 0 -1" diffuse="0.7 0.7 0.7" castshadow="true"/>
+    <light name="side"  pos="1 -1 2" dir="-0.5 0.5 -1" diffuse="0.4 0.4 0.4"/>
+
+    <!-- Table surface -->
+    <geom name="table" type="box" pos="0.4 0 -0.02" size="0.6 0.6 0.02" material="table_mat" contype="1" conaffinity="1"/>
+
+    <!-- Robot base (fixed) -->
+    <body name="base" pos="0 0 0">
+      <geom name="base_geom" type="cylinder" pos="0 0 0.05" size="0.07 0.05" material="base_mat"/>
+
+      <!-- Shoulder pan (z-axis, ±180°) -->
+      <body name="shoulder_pan_link" pos="0 0 0.10">
+        <joint name="shoulder_pan"  type="hinge" axis="0 0 1" range="-3.1416 3.1416" damping="1.0"/>
+        <geom  name="sp_geom"       type="sphere"   size="0.05" material="joint_mat" mass="0.5"/>
+        <geom  name="sp_link"       type="capsule"  fromto="0 0 0  0 0 0.15" size="0.03" material="arm_mat" mass="0.3"/>
+
+        <!-- Shoulder lift (y-axis) -->
+        <body name="shoulder_lift_link" pos="0 0 0.15">
+          <joint name="shoulder_lift" type="hinge" axis="0 1 0" range="-1.570 1.570" damping="1.0"/>
+          <geom  name="sl_geom"       type="sphere"   size="0.045" material="joint_mat" mass="0.5"/>
+          <geom  name="sl_link"       type="capsule"  fromto="0 0 0  0.22 0 0" size="0.028" material="arm_mat" mass="0.5"/>
+
+          <!-- Upper arm roll (x-axis) -->
+          <body name="upper_arm_roll_link" pos="0.22 0 0">
+            <joint name="upper_arm_roll" type="hinge" axis="1 0 0" range="-3.1416 3.1416" damping="0.5"/>
+            <geom  name="uar_geom"       type="sphere"   size="0.04" material="joint_mat" mass="0.3"/>
+            <geom  name="uar_link"       type="capsule"  fromto="0 0 0  0.20 0 0" size="0.025" material="arm_mat" mass="0.4"/>
+
+            <!-- Elbow flex (y-axis) -->
+            <body name="elbow_flex_link" pos="0.20 0 0">
+              <joint name="elbow_flex"   type="hinge" axis="0 1 0" range="-2.356 0.000" damping="0.8"/>
+              <geom  name="ef_geom"      type="sphere"   size="0.038" material="joint_mat" mass="0.3"/>
+              <geom  name="ef_link"      type="capsule"  fromto="0 0 0  0.16 0 0" size="0.022" material="arm_mat" mass="0.3"/>
+
+              <!-- Forearm roll (x-axis) -->
+              <body name="forearm_roll_link" pos="0.16 0 0">
+                <joint name="forearm_roll" type="hinge" axis="1 0 0" range="-3.1416 3.1416" damping="0.4"/>
+                <geom  name="fr_geom"      type="sphere"   size="0.033" material="joint_mat" mass="0.2"/>
+                <geom  name="fr_link"      type="capsule"  fromto="0 0 0  0.12 0 0" size="0.018" material="arm_mat" mass="0.2"/>
+
+                <!-- Wrist flex (y-axis) -->
+                <body name="wrist_flex_link" pos="0.12 0 0">
+                  <joint name="wrist_flex"  type="hinge" axis="0 1 0" range="-1.833 1.833" damping="0.3"/>
+                  <geom  name="wf_geom"     type="sphere"   size="0.028" material="joint_mat" mass="0.1"/>
+                  <geom  name="wf_link"     type="capsule"  fromto="0 0 0  0.08 0 0" size="0.015" material="arm_mat" mass="0.1"/>
+
+                  <!-- Wrist roll (x-axis) + end-effector -->
+                  <body name="wrist_roll_link" pos="0.08 0 0">
+                    <joint name="wrist_roll"    type="hinge" axis="1 0 0" range="-3.1416 3.1416" damping="0.2"/>
+                    <geom  name="wr_geom"       type="sphere"   size="0.024" material="joint_mat" mass="0.08"/>
+                    <!-- End-effector tip (pusher finger) -->
+                    <geom  name="ee_tip"        type="sphere"   pos="0.06 0 0" size="0.020" material="ee_mat" mass="0.05"/>
+                    <site  name="ee_site"       pos="0.06 0 0"  size="0.005"/>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+
+    <!-- Puck — free to slide on table (z locked near surface) -->
+    <body name="puck" pos="0.45 0.05 0.02">
+      <joint name="puck_x" type="slide" axis="1 0 0" range="-0.4 0.4" damping="0.5" limited="true"/>
+      <joint name="puck_y" type="slide" axis="0 1 0" range="-0.4 0.4" damping="0.5" limited="true"/>
+      <geom  name="puck_geom" type="cylinder" size="0.04 0.02" material="puck_mat"
+             mass="0.3" friction="0.5 0.1 0.1" contype="1" conaffinity="1"/>
+      <site  name="puck_site" pos="0 0 0" size="0.005"/>
+    </body>
+
+    <!-- Goal marker (visual only, moved at reset) -->
+    <body name="goal" pos="0.55 0.10 0.001">
+      <joint name="goal_x" type="slide" axis="1 0 0" range="-0.4 0.4" limited="true"/>
+      <joint name="goal_y" type="slide" axis="0 1 0" range="-0.4 0.4" limited="true"/>
+      <geom  name="goal_geom" type="cylinder" size="0.05 0.002" material="goal_mat"
+             contype="0" conaffinity="0"/>
+      <site  name="goal_site" pos="0 0 0" size="0.005"/>
+    </body>
+
+  </worldbody>
+
+  <actuator>
+    <motor name="sp_mot"  joint="shoulder_pan"  gear="30"/>
+    <motor name="sl_mot"  joint="shoulder_lift" gear="30"/>
+    <motor name="uar_mot" joint="upper_arm_roll" gear="20"/>
+    <motor name="ef_mot"  joint="elbow_flex"    gear="30"/>
+    <motor name="fr_mot"  joint="forearm_roll"  gear="15"/>
+    <motor name="wf_mot"  joint="wrist_flex"    gear="15"/>
+    <motor name="wr_mot"  joint="wrist_roll"    gear="10"/>
+  </actuator>
+
+  <sensor>
+    <jointpos name="sp_pos"  joint="shoulder_pan"/>
+    <jointpos name="sl_pos"  joint="shoulder_lift"/>
+    <jointpos name="uar_pos" joint="upper_arm_roll"/>
+    <jointpos name="ef_pos"  joint="elbow_flex"/>
+    <jointpos name="fr_pos"  joint="forearm_roll"/>
+    <jointpos name="wf_pos"  joint="wrist_flex"/>
+    <jointpos name="wr_pos"  joint="wrist_roll"/>
+    <framepos name="ee_pos"  objtype="site" objname="ee_site"/>
+    <framepos name="puck_pos" objtype="site" objname="puck_site"/>
+    <framepos name="goal_pos" objtype="site" objname="goal_site"/>
+  </sensor>
+</mujoco>

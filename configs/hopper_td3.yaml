@@ -1,0 +1,24 @@
+# Hopper — TD3 (deterministic policy, good for locomotion)
+env_name:         Hopper
+algorithm:        td3
+total_timesteps:  500_000
+seed:             42
+eval_episodes:    10
+eval_interval:    25_000
+save_interval:    100_000
+log_dir:          logs
+
+td3:
+  hidden_sizes:      [256, 256]
+  gamma:             0.99
+  tau:               0.005
+  lr_actor:          3.0e-4
+  lr_critic:         3.0e-4
+  batch_size:        256
+  replay_capacity:   1_000_000
+  learning_starts:   10_000
+  update_every:      1
+  policy_delay:      2
+  expl_noise:        0.1
+  noise_clip:        0.5
+  policy_noise:      0.2

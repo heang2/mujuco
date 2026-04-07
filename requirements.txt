@@ -1,0 +1,21 @@
+# Core simulation
+mujoco>=3.0.0
+
+# RL framework
+gymnasium>=1.0.0
+
+# Deep learning
+torch>=2.0.0
+
+# Numerics & plotting
+numpy>=1.24.0
+matplotlib>=3.7.0
+
+# Config files
+pyyaml>=6.0
+
+# Video recording (optional)
+imageio[ffmpeg]>=2.31.0
+
+# Testing
+pytest>=7.4.0
