@@ -212,7 +212,7 @@ class PPO:
         }, path)
 
     def load(self, path: str) -> None:
-        ckpt = torch.load(path, map_location=self.config.device)
+        ckpt = torch.load(path, map_location=self.config.device, weights_only=False)
         self.policy.load_state_dict(ckpt["policy"])
         self.optimizer.load_state_dict(ckpt["optimizer"])
         self.obs_rms      = ckpt["obs_rms"]

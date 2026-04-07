@@ -172,5 +172,5 @@ class ActorCritic(nn.Module):
         torch.save(self.state_dict(), path)
 
     def load(self, path: str, device: str = "cpu") -> None:
-        state = torch.load(path, map_location=device)
+        state = torch.load(path, map_location=device, weights_only=True)
         self.load_state_dict(state)

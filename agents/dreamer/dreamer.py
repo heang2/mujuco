@@ -404,7 +404,7 @@ class DreamerV3:
         logger.info(f"Saved checkpoint to {path}")
 
     def load(self, path) -> None:
-        ckpt = torch.load(path, map_location=self.device)
+        ckpt = torch.load(path, map_location=self.device, weights_only=False)
         self.wm.load_state_dict(ckpt["wm"])
         self.actor.load_state_dict(ckpt["actor"])
         self.critic.load_state_dict(ckpt["critic"])
