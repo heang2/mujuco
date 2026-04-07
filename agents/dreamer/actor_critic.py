@@ -6,6 +6,7 @@ The actor is trained by backpropagating through imagined trajectories.
 The critic uses λ-returns with exponential moving average return normalization.
 """
 
+import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -131,9 +132,6 @@ class ReturnNormalizer:
     def load_state_dict(self, d):
         self._lo = d["lo"]
         self._hi = d["hi"]
-
-
-import math  # needed for DreamerActor.entropy
 
 
 def compute_lambda_returns(

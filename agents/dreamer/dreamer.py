@@ -151,7 +151,8 @@ class DreamerV3:
                             else np.pad(ep, (0, obs_np.shape[0]-len(ep)))
                             for ep in don_list], axis=1)
 
-        to = lambda x: torch.from_numpy(x).float().to(self.device)
+        def to(x):
+            return torch.from_numpy(x).float().to(self.device)
         return {
             "obs":     to(obs_np),
             "actions": to(act_np),
@@ -217,13 +218,16 @@ class DreamerV3:
             feats  = result["feats"].detach()   # (T, B, state_dim)
 
         # Use all latent states as starting points for imagined rollouts
-        T, B, _ = feats.shape
-        start_feats = feats.reshape(T * B, -1)  # (T*B, state_dim)
+        T, B_dim, _ = feats.shape
+        start_feats = feats.reshape(T * B_dim, -1)  # (T*B, state_dim)
 
         # Imagined rollout
+        def _actor_fn(f):
+            return self.actor.get_action(f)
+
         rollout = self.wm.imagine_rollout(
             start_feats,
-            actor_fn=lambda f: self.actor.get_action(f),
+            actor_fn=_actor_fn,
             horizon=cfg.imagine_horizon,
         )
         imag_feats   = rollout["feats"]    # (H, T*B, state_dim)
@@ -235,7 +239,7 @@ class DreamerV3:
         all_feats = torch.cat([start_feats.unsqueeze(0), imag_feats], dim=0)  # (H+1, T*B, D)
         with torch.no_grad():
             values = self.critic_target(all_feats.reshape(-1, all_feats.shape[-1]))
-            values = values.reshape(H + 1, T * B)  # (H+1, T*B)
+            values = values.reshape(H + 1, T * B_dim)  # (H+1, T*B)
 
         conts = imag_conts * cfg.gamma
         targets = compute_lambda_returns(
@@ -248,8 +252,8 @@ class DreamerV3:
 
         # ── Critic update ─────────────────────────────────────────────────
         v1, v2   = self.critic.both(imag_feats.reshape(-1, imag_feats.shape[-1]))
-        v1 = v1.reshape(H, T * B)
-        v2 = v2.reshape(H, T * B)
+        v1 = v1.reshape(H, T * B_dim)
+        v2 = v2.reshape(H, T * B_dim)
         targets_det = targets_norm.detach()
         c_loss = 0.5 * (F.mse_loss(v1, targets_det) + F.mse_loss(v2, targets_det))
 
@@ -267,15 +271,15 @@ class DreamerV3:
         # Re-roll with gradient tracking
         rollout_g = self.wm.imagine_rollout(
             start_feats,
-            actor_fn=lambda f: self.actor.get_action(f),
+            actor_fn=_actor_fn,
             horizon=cfg.imagine_horizon,
         )
         imag_feats_g = rollout_g["feats"]
         actor_values = self.critic(imag_feats_g.reshape(-1, imag_feats_g.shape[-1]))
-        actor_values = actor_values.reshape(H, T * B)
+        actor_values = actor_values.reshape(H, T * B_dim)
 
         entropy = self.actor.entropy(imag_feats_g.reshape(-1, imag_feats_g.shape[-1]))
-        entropy = entropy.reshape(H, T * B).mean()
+        entropy = entropy.reshape(H, T * B_dim).mean()
 
         a_loss = -(actor_values.mean() + cfg.actor_ent_scale * entropy)
 
@@ -344,8 +348,8 @@ class DreamerV3:
                     batch = self._sample_sequences()
                     if batch is None:
                         break
-                    wm_stats = self._update_world_model(batch)
-                    ac_stats = self._update_actor_critic(batch)
+                    self._update_world_model(batch)
+                    self._update_actor_critic(batch)
                     self.total_updates += 1
 
             # ── Logging ───────────────────────────────────────────────────

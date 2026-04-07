@@ -279,8 +279,6 @@ class WorldModel(nn.Module):
           conts    — (H, B)
           actions  — (H, B, act_dim)
         """
-        B      = initial_feat.shape[0]
-        device = initial_feat.device
         h = initial_feat[:, :self.rssm.deter_dim]
         z = initial_feat[:, self.rssm.deter_dim:]
 
